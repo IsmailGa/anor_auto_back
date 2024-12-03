@@ -1,22 +1,31 @@
-require("dotenv").config();
-const jwt = require('jsonwebtoken');
+const jwt = require("jsonwebtoken");
+const pool = require("../models/db");
 
-const authMiddleware = (req, res, next) => {
-    const authHeader = req.header('Authorization');
+const authMiddleware = async (req, res, next) => {
+  const token = req.cookies.token;
 
-    if (!authHeader) {
-        return res.status(401).json({ message: 'Нет токена, авторизация отклонена' });
+  if (!token) {
+    return res.status(401).json({ message: "Неавторизованный доступ" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT);
+
+    const result = await pool.query(
+      "SELECT * FROM admins WHERE id = $1 AND token = $2",
+      [decoded.id, token]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(401).json({ message: "Неавторизованный доступ" });
     }
 
-    const token = authHeader.replace('Bearer ', '');
-
-    try {
-        const decoded = jwt.verify(token, process.env.JWT); // Make sure JWT_SECRET is in .env
-        req.admin = decoded;
-        next();
-    } catch (err) {
-        res.status(401).json({ message: 'Неверный токен' });
-    }
+    req.user = result.rows[0];
+    next();
+  } catch (error) {
+    console.error(error);
+    res.status(401).json({ message: "Токен недействителен" });
+  }
 };
 
 module.exports = authMiddleware;
