@@ -2,23 +2,14 @@ require("dotenv").config();
 const pool = require("../models/db");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { validationResult, body } = require("express-validator");
+const { validationResult } = require("express-validator");
 
 exports.adminRegister = async (req, res) => {
-  body("username")
-    .isLength({ min: 6 })
-    .withMessage("Имя пользователя должно быть более 6 символов");
-  body("password")
-    .isLength({ min: 8 })
-    .withMessage("Пароль пользователя должно быть более 8 сивмолов");
-
   const error = validationResult(req);
   if (!error.isEmpty()) {
     return res.status(400).json({ error: error.array() });
   }
-
   const { username, password } = req.body;
-
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
     await pool.query("INSERT INTO admins (username, password) VALUES($1, $2)", [
@@ -76,7 +67,7 @@ exports.adminLogin = async (req, res) => {
   }
 };
 
-exports.logout = async (req, res) => {
+exports.adminLogout = async (req, res) => {
   try {
     const token = req.cookies.token;
     if (!token) {

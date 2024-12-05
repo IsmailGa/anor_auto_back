@@ -85,10 +85,17 @@ exports.updateProduct = async (req, res) => {
     size,
     weight,
     description_en,
-    description_ru
+    description_ru,
   } = req.body;
 
   try {
+    const productCheck = await pool.query(
+      "SELECT * FROM products WHERE id = $1",
+      [id]
+    );
+    if (productCheck.rows.length === 0) {
+      return res.status(404).json({ message: "Продукт не найден" });
+    }
     const result = await pool.query(
       `UPDATE products
        SET name_en = $1, name_ru = $2, category = $3, part_number = $4,

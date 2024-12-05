@@ -3,9 +3,8 @@ const express = require('express');
 const cors = require('cors');
 const productRoutes = require('./routes/productRoutes');
 const adminRoutes = require('./routes/adminRoutes');
+const errorHandler = require("./middleWare/errorHandler")
 const cookieParser = require("cookie-parser")
-const bcrypt = require("bcrypt");
-
 
 const app = express();
 app.use(cors({
@@ -15,7 +14,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(cookieParser());
-
+app.use(errorHandler);
 
 app.use('/api/products', productRoutes);
 app.use('/api/admins', adminRoutes);
