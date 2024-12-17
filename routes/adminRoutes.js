@@ -3,6 +3,7 @@ const {adminLogin, adminRegister, adminLogout} = require("../controllers/adminCo
 const authMiddleware  = require("../middleWare/authMiddleWare");
 const router = express.Router()
 const { check } = require('express-validator');
+const validateToken = require("../middleWare/validateToken");
 
 const adminValidationRules = [
   check('username')
@@ -13,8 +14,9 @@ const adminValidationRules = [
     .withMessage('Пароль пользователя должен быть более 8 символов'),
 ];
 
-router.post("/register",  adminValidationRules ,adminRegister)
-router.post("/login", adminLogin)
-router.post("/logout", authMiddleware, adminLogout)
+router.post("/register", adminValidationRules, adminRegister);
+router.post("/login", adminLogin);
+router.post("/logout", authMiddleware, adminLogout);
+router.post("/validate-token", validateToken);
 
 module.exports = router
